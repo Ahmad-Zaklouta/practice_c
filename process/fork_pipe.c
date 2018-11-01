@@ -3,7 +3,29 @@
 Write Linux C program to create two processes P1 and P2. P1 takes a string and
 passes it to P2. P2 concatenates the received string with another string without
 using string function and sends it back to P1 for printing.
-https://www.geeksforgeeks.org/c-program-demonstrate-fork-and-pipe/ */
+https://www.geeksforgeeks.org/c-program-demonstrate-fork-and-pipe/
+https://www.geeksforgeeks.org/pipe-system-call/
+
+- a pipe is a connection between two processes.
+- Pipe is one-way communication only i.e we can use a pipe such that One process
+  write to the pipe, and the other process reads from the pipe. It opens a pipe,
+  which is an area of main memory that is treated as a “virtual file”.
+- The pipe can be used by the creating process, as well as all its child
+  processes, for reading and writing. One process can write to this “virtual file”
+  or pipe and another related process can read from it.
+- If a process tries to read before something is written to the pipe, the process
+  is suspended until something is written.
+- The pipe system call finds the first two available positions in the process’s
+  open file table and allocates them for the read and write ends of the pipe.
+- When we use fork in any process, file descriptors remain open across child
+  process and also parent process. If we call fork after creating a pipe,
+  then the parent and child can communicate via the pipe.
+- If pipe is empty and we call read system call then Reads on the pipe will
+  return EOF (return value 0) if no process has the write end open.
+- If some other process has the pipe open for writing, read will block in
+  anticipation of new data so this code output hangs because here write ends
+  parent process and also child process doesn’t close.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
