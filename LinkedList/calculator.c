@@ -1,13 +1,17 @@
+/*
+
+https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-087-practical-programming-in-c-january-iap-2010/assignments/MIT6_087IAP10_assn06a.pdf
+https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-087-practical-programming-in-c-january-iap-2010/assignments/MIT6_087IAP10_assn06a_sol.pdf
+https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-087-practical-programming-in-c-january-iap-2010/assignments/assn06a.zip
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 /* maximum length of input string (including newline character) */
   #define INPUT_MAX 2048
-
-/* enable (1) or disable (0) parentheses checking in parsing strings */
-/* leave disabled for part (a); enable for part (b) */
-  #define PARSE_PARENS 0
 
 /******************************************************************************
 * varaiables declaration                                                      *
@@ -17,10 +21,8 @@
   enum token_type {
     OPERAND,  /* number */
     OPERATOR, /* operator: +, -, *, / */
-    #if PARSE_PARENS
-      LPARENS, /* left parentheses ( */
-      RPARENS  /* right parentheses ) */
-    #endif
+    LPARENS, /* left parentheses ( */
+    RPARENS  /* right parentheses ) */
   };
 
 /* operator identifiers (opcodes) */
@@ -105,7 +107,7 @@ int main(void) {
 	unsigned int len;
 
 	do {
-		printf("Enter an expression to evaluate: ");
+		printf("Enter an expression to evaluate (Space between each token): ");
 		fflush(stdout);
 		if (!fgets(input, INPUT_MAX, stdin))
 			abort(); /* failed to read stdin */
@@ -246,35 +248,40 @@ int main(void) {
           type = OPERATOR;
           value.op_code = ADD;
           break;
+          
         case '-':
           /* check previous token to distinguish between
              negate (unary) and subtract (binary) */
           if (type == OPERATOR)
             value.op_code = NEGATE; /* unary */
-    #if PARSE_PARENS
+
           else if (type == LPARENS)
             value.op_code = NEGATE; /* unary */
-    #endif
+
           else
             value.op_code = SUBTRACT; /* binary */
+          
           type = OPERATOR;
           break;
+          
         case '*':
           type = OPERATOR;
           value.op_code = MULTIPLY;
           break;
+          
         case '/':
           type = OPERATOR;
           value.op_code = DIVIDE;
           break;
-    #if PARSE_PARENS
+          
         case '(':
           type = LPARENS;
           break;
+          
         case ')':
           type = RPARENS;
           break;
-    #endif
+          
         default:
           /* not an operator */
           type = OPERAND;
@@ -323,7 +330,7 @@ int main(void) {
           break; 
           
         case OPERATOR: 
-          while(stack_top && 
+          while(stack_top && stack_top->type == OPERATOR &&
                 ( (op_precedences[stack_top->value.op_code] > op_precedences[ptoken->value.op_code]) ||
                   (op_precedences[stack_top->value.op_code] == op_precedences[ptoken->value.op_code] 
                    && op_associativity[op_precedences[ptoken->value.op_code]] == LEFT)
@@ -335,10 +342,24 @@ int main(void) {
                    
           push(&stack_top, ptoken); 
           break; 
-          
-        default : /* other tokens ignored */ 
-          free(ptoken); 
-          break; 
+ 
+        case LPARENS:
+          /* pushed to operator stack */
+          push(&stack_top, ptoken);
+          break;
+        
+        case RPARENS:
+          /* pop operators off stack until left parentheses reached */ 
+          free(ptoken); /* parentheses not included in postfix queue */ 
+          while ((ptoken = pop(&stack_top))) 
+          {
+            if (ptoken->type == LPARENS) 
+            {
+              free (ptoken );
+              break;
+            }
+            enqueue(&queue_postfix, ptoken);
+          }
       }
     }
          
