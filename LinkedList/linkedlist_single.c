@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/******************************************************************************
+* varaiables declaration                                                      *
+******************************************************************************/
+
   // Declare a structure
   typedef struct node {
     int         data;
